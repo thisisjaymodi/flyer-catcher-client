@@ -1,10 +1,14 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import { Box, Grid, Paper } from "@mui/material";
 import FormPanel from "../components/FlyerEditorTemplate/FormPanel";
 import DocumentPanel from "../components/FlyerEditorTemplate/DocumentPanel";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 
+
+
+const FlyerEditor = () => {
+  
 // ── Sx ──────────────────────────────────────────────────────────────
 const boxSx = {
   display: "flex",
@@ -54,12 +58,33 @@ const previewPaperSx = {
     sm: 280, // guarantees document is always reachable via h-scroll
     md: 320,
   },
-};
+};  
+   
+const documentPanelRef = useRef(null);
+const [form, setForm] = useState({
+    store_id: "",
+    store_name: "",
+    store_location: "",
+    store_branding: null,
+    effective_from: "",
+    valid_till: "",
+    tag_line: "",
+    terms: "",
+    products: [
+      {
+        id: 1,
+        product_upc: "",
+        product_name: "",
+        product_price: "",
+        discount: "",
+        product_logo: null,
+        other_detail: "",
+      },
+    ],
+  });
 
-const FlyerEditor = () => {
-  const documentPanelRef = useRef(null);
-
-  const downloadAsPDF = async () => {
+// ── Handle ──────────────────────────────────────────────────────────────
+const downloadAsPDF = async () => {
     const container = documentPanelRef.current;
     if (!container) return;
 
@@ -91,8 +116,7 @@ const FlyerEditor = () => {
 
     pdf.save("flyer.pdf");
   };
-
-  const printFlyer = () => {
+const printFlyer = () => {
   const container = documentPanelRef.current;
   if (!container) return;
 
@@ -139,18 +163,19 @@ const FlyerEditor = () => {
   printWindow.document.close();
 };
 
+
   return (
     <div>
       <Box sx={boxSx}>
         {/* Left: Form — top on mobile */}
         <Paper sx={formPaperSx} elevation={0}>
-          <FormPanel onDownloadPDF={downloadAsPDF}  onPrintFlyer={printFlyer}/>
+          <FormPanel onDownloadPDF={downloadAsPDF}  onPrintFlyer={printFlyer} form={form} setForm={setForm}/>
         </Paper>
 
         {/* Right: Document — bottom on mobile */}
         <Paper sx={previewPaperSx} elevation={0}>
           <div ref={documentPanelRef}>
-            <DocumentPanel />
+            <DocumentPanel form={form}/>
           </div>
         </Paper>
       </Box>

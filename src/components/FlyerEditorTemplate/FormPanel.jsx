@@ -14,11 +14,20 @@ import {
   Alert,
   
 } from "@mui/material";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import FileUploadField from "../FileUploadField";
 
 
-// ── Sx ──────────────────────────────────────────────────────────────
+export default function FormPanel({ onDownloadPDF, onPrintFlyer, form, setForm  }) {
+  
+  const steps = ["branding", "products", "review"];
+  const [activeStep, setActiveStep] = React.useState(0);
+
+
+  
+
+
+  // ── Sx ──────────────────────────────────────────────────────────────
   const wrapperSx = {
     display: "flex",
     flexDirection: "column",
@@ -54,33 +63,6 @@ import FileUploadField from "../FileUploadField";
     borderRadius: 3,
     bgcolor: "grey.50",
   };
-
-
-export default function FormPanel({ onDownloadPDF, onPrintFlyer  }) {
-  const steps = ["branding", "products", "review"];
-
-  const [activeStep, setActiveStep] = React.useState(0);
-  const [form, setForm] = useState({
-    store_id: "",
-    store_name: "",
-    store_location: "",
-    store_branding: null,
-    effective_from: "",
-    valid_till: "",
-    tag_line: "",
-    terms: "",
-    products: [
-      {
-        id: 1,
-        product_upc: "",
-        product_name: "",
-        product_price: "",
-        discount: "",
-        product_logo: null,
-        other_detail: "",
-      },
-    ],
-  });
 
   // ── Handlers ──────────────────────────────────────────────────────────────
   const handleNext = () => {
@@ -126,6 +108,7 @@ export default function FormPanel({ onDownloadPDF, onPrintFlyer  }) {
     }));
   };
 
+  
 
   return (
     <Box sx={wrapperSx}>
@@ -225,7 +208,7 @@ export default function FormPanel({ onDownloadPDF, onPrintFlyer  }) {
                 size="small"
                 fullWidth
                 placeholder="My Pizza Store"
-                value={form.tag_line}
+                value={form.store_name}
                 onChange={(e) => handleFieldChange("store_name", e.target.value)}
               />
               <TextField
@@ -233,7 +216,7 @@ export default function FormPanel({ onDownloadPDF, onPrintFlyer  }) {
                 size="small"
                 fullWidth
                 placeholder="1234 King St, Hamilton, On"
-                value={form.tag_line}
+                value={form.store_location}
                 onChange={(e) => handleFieldChange("store_location", e.target.value)}
               />
               <TextField

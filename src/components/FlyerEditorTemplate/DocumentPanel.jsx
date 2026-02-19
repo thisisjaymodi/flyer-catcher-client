@@ -1,9 +1,10 @@
 import { Typography, Box } from "@mui/material";
 import StoreFlyer from "./StoreFlyer.jsx";
-import data from "../../assets/data/mockData.js";
+// import data from "../../assets/data/mockData.js";
 
 
-export default function DocumentPanel() {
+
+export default function DocumentPanel({form}) {
   
 
   return (
@@ -26,7 +27,7 @@ export default function DocumentPanel() {
             lg: 1,     // 100% on large+
           },
         }}>
-       <StoreFlyer {...data}/>
+       <StoreFlyer  {...form}/>
       </Box>
     </Box>
   );

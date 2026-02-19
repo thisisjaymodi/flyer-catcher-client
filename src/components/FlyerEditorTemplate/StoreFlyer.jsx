@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { Icon } from '@mui/material';
 
 /**
@@ -14,7 +14,7 @@ import { Icon } from '@mui/material';
  *   valid_till: string,           // "YYYY-MM-DD"
  *   tag_line: string,
  *   terms: string,
- *   product: Array<{
+ *   products: Array<{
  *     id: number,
  *     product_upc: number,
  *     product_name: string,
@@ -26,15 +26,15 @@ import { Icon } from '@mui/material';
  * }
  *
  * Layout per page (9 products):
- *   product[0] → Featured center (large)
- *   product[1] → Upper-left, row 1
- *   product[2] → Upper-left, row 2
- *   product[3] → Upper-right, row 1
- *   product[4] → Upper-right, row 2
- *   product[5] → Bottom col 1
- *   product[6] → Bottom col 2
- *   product[7] → Bottom col 3
- *   product[8] → Bottom col 4
+ *   products[0] → Featured center (large)
+ *   products[1] → Upper-left, row 1
+ *   products[2] → Upper-left, row 2
+ *   products[3] → Upper-right, row 1
+ *   products[4] → Upper-right, row 2
+ *   products[5] → Bottom col 1
+ *   products[6] → Bottom col 2
+ *   products[7] → Bottom col 3
+ *   products[8] → Bottom col 4
  */
 // ─── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -48,13 +48,20 @@ function formatDate(dateStr) {
 
 function ProductImage({ src, alt }) {
   const [failed, setFailed] = useState(false);
-  const prevSrc = useRef(src);
   
-  
-  if (prevSrc.current !== src) {
-    prevSrc.current = src;
-    if (failed) setFailed(false);
-  }
+  // Convert File object to blob URL, otherwise use as-is
+  const imageSrc = useMemo(() => {
+    if (!src) return null;
+    if (src instanceof File) {
+      return URL.createObjectURL(src);  // ✅ File → blob URL
+    }
+    return src;  // ✅ Already a string URL
+  }, [src]);
+
+  // Reset failed state when src changes (via useEffect, not during render)
+  useEffect(() => {
+    setFailed(false);
+  }, [imageSrc]);
 
   const wrapStyle = {
     width: '100%',
@@ -66,7 +73,7 @@ function ProductImage({ src, alt }) {
     overflow: 'hidden',
   };
 
-  if (!src || failed) {
+  if (!imageSrc || failed) {
     return (
       <div style={wrapStyle}>
         <span style={{ fontSize: '10px', color: '#ccc' }}>No Image</span>
@@ -77,11 +84,16 @@ function ProductImage({ src, alt }) {
   return (
     <div style={wrapStyle}>
       <img
-        key={src}
-        src={src}
+        key={imageSrc}
+        src={imageSrc}
         alt={alt || ''}
         onError={() => setFailed(true)}
-        style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+        style={{ 
+          width: '100%', 
+          height: '100%', 
+          objectFit: 'cover', 
+          display: 'block' 
+        }}
       />
     </div>
   );
@@ -240,7 +252,7 @@ function TagBadge({ tagLine }) {
   return (
     <div style={{
       flexShrink: 0,
-      width: '120px',
+      width: '150px',
       height: '100px',
       borderRadius: '14px',
       overflow: 'hidden',
@@ -295,48 +307,104 @@ function FlyerPage({ store_name, store_location, store_branding, effective_from,
   })();
 
   return (
-    <div 
-    data-flyer-page="true" 
-    style={{
-      width: '794px',
-      height: '1123px',           /* fixed A4-ish height — cards fill it fully */
-      backgroundColor: '#fff',
-      boxShadow: '0 4px 24px rgba(0,0,0,0.18)',
-      display: 'flex',
-      flexDirection: 'column',
-      overflow: 'hidden',
-      boxSizing: 'border-box',
-      fontFamily: "'Segoe UI', Arial, sans-serif",
-    }}>
-
+    <div
+      data-flyer-page="true"
+      style={{
+        width: "794px",
+        height: "1123px" /* fixed A4-ish height — cards fill it fully */,
+        backgroundColor: "#fff",
+        boxShadow: "0 4px 24px rgba(0,0,0,0.18)",
+        display: "flex",
+        flexDirection: "column",
+        overflow: "hidden",
+        boxSizing: "border-box",
+        fontFamily: "'Segoe UI', Arial, sans-serif",
+      }}
+    >
       {/* ── HEADER ── */}
-      <div style={{ display: 'flex', alignItems: 'center', padding: '18px 22px 14px', gap: '16px', flexShrink: 0 }}>
-        <div style={{
-          width: '86px', height: '86px',
-          border: '2.5px solid #111', borderRadius: '14px',
-          flexShrink: 0, overflow: 'hidden', backgroundColor: '#fafafa',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          padding: "18px 22px 14px",
+          gap: "16px",
+          flexShrink: 0,
+        }}
+      >
+        <div
+          style={{
+            width: "86px",
+            height: "86px",
+            border: "2.5px solid #111",
+            borderRadius: "14px",
+            flexShrink: 0,
+            overflow: "hidden",
+            backgroundColor: "#fafafa",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
           {store_branding && !logoFailed ? (
             <img
-              key={store_branding}
-              src={store_branding}
+              key={
+                store_branding instanceof File
+                  ? store_branding.name
+                  : store_branding
+              }
+              src={
+                store_branding instanceof File
+                  ? URL.createObjectURL(store_branding) // ← Convert File to blob URL
+                  : store_branding // ← Already a URL string
+              }
               alt="Store Logo"
               onError={() => setLogoFailed(true)}
-              style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "contain",
+                display: "block",
+              }}
             />
           ) : (
-            <div style={{ fontSize: '12px', fontWeight: '700', textAlign: 'center', color: '#333', lineHeight: 1.3, padding: '4px' }}>
-              STORE<br />LOGO
+            <div
+              style={{
+                fontSize: "12px",
+                fontWeight: "700",
+                textAlign: "center",
+                color: "#333",
+                lineHeight: 1.3,
+                padding: "4px",
+              }}
+            >
+              STORE
+              <br />
+              LOGO
             </div>
           )}
         </div>
 
         <div style={{ flex: 1 }}>
-          <h1 style={{ fontSize: '28px', fontWeight: '900', lineHeight: 1.05, margin: 0, color: '#111', letterSpacing: '-0.5px' }}>
+          <h1
+            style={{
+              fontSize: "28px",
+              fontWeight: "900",
+              lineHeight: 1.05,
+              margin: 0,
+              color: "#111",
+              letterSpacing: "-0.5px",
+            }}
+          >
             {store_name}
           </h1>
-          <p style={{ fontSize: '14px', color: '#555', margin: '4px 0 0', fontWeight: '400' }}>
+          <p
+            style={{
+              fontSize: "14px",
+              color: "#555",
+              margin: "4px 0 0",
+              fontWeight: "400",
+            }}
+          >
             {store_location}
           </p>
         </div>
@@ -346,36 +414,65 @@ function FlyerPage({ store_name, store_location, store_branding, effective_from,
 
       {/* ── DATE BAR ── */}
       {validRange && (
-        <div style={{
-          backgroundColor: '#fde8d0',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          padding: '9px 20px', position: 'relative', flexShrink: 0,
-        }}>
-          <span style={{ position: 'absolute', left: '18px', fontSize: '18px', color: '#000000' }} role="img" aria-label="calendar"><Icon>calendar_month</Icon></span>
-          <span style={{ fontSize: '16px', fontWeight: '500', color: '#333' }}>{validRange}</span>
+        <div
+          style={{
+            backgroundColor: "#fde8d0",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "9px 20px",
+            position: "relative",
+            flexShrink: 0,
+          }}
+        >
+          <span
+            style={{
+              position: "absolute",
+              left: "18px",
+              fontSize: "18px",
+              color: "#000000",
+            }}
+            role="img"
+            aria-label="calendar"
+          >
+            <Icon>calendar_month</Icon>
+          </span>
+          <span style={{ fontSize: "16px", fontWeight: "500", color: "#333" }}>
+            {validRange}
+          </span>
         </div>
       )}
 
       {/* ── PRODUCTS (fills remaining height) ── */}
-      <div style={{
-        flex: 1,
-        padding: '12px 16px 10px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '10px',
-        minHeight: 0,
-      }}>
-
-        {/* Upper grid: left | featured | right */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 2fr 1fr',
-          gap: '10px',
-          flex: '6',               /* 60% of product area */
+      <div
+        style={{
+          flex: 1,
+          padding: "12px 16px 10px",
+          display: "flex",
+          flexDirection: "column",
+          gap: "10px",
           minHeight: 0,
-        }}>
+        }}
+      >
+        {/* Upper grid: left | featured | right */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 2fr 1fr",
+            gap: "10px",
+            flex: "6" /* 60% of product area */,
+            minHeight: 0,
+          }}
+        >
           {/* Left column */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', minHeight: 0 }}>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "10px",
+              minHeight: 0,
+            }}
+          >
             <RegularCard item={get(1)} badgeSize={40} />
             <RegularCard item={get(2)} badgeSize={40} />
           </div>
@@ -384,50 +481,69 @@ function FlyerPage({ store_name, store_location, store_branding, effective_from,
           <FeaturedCard item={get(0)} />
 
           {/* Right column */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', minHeight: 0 }}>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "10px",
+              minHeight: 0,
+            }}
+          >
             <RegularCard item={get(3)} badgeSize={40} />
             <RegularCard item={get(4)} badgeSize={40} />
           </div>
         </div>
 
         {/* Bottom row: 4 cards */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(4, 1fr)',
-          gap: '10px',
-          flex: '4',               /* 40% of product area */
-          minHeight: 0,
-        }}>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(4, 1fr)",
+            gap: "10px",
+            flex: "4" /* 40% of product area */,
+            minHeight: 0,
+          }}
+        >
           <RegularCard item={get(5)} badgeSize={36} />
           <RegularCard item={get(6)} badgeSize={36} />
           <RegularCard item={get(7)} badgeSize={36} />
           <RegularCard item={get(8)} badgeSize={36} />
         </div>
-
       </div>
 
       {/* Page indicator */}
       {totalPages > 1 && (
-        <div style={{ textAlign: 'center', fontSize: '11px', color: '#aaa', paddingBottom: '3px', flexShrink: 0 }}>
+        <div
+          style={{
+            textAlign: "center",
+            fontSize: "11px",
+            color: "#aaa",
+            paddingBottom: "3px",
+            flexShrink: 0,
+          }}
+        >
           Page {pageIndex + 1} of {totalPages}
         </div>
       )}
 
       {/* ── FOOTER ── */}
-      <div style={{
-        backgroundColor: '#fde8d0',
-        padding: '9px 20px',
-        textAlign: 'center',
-        fontSize: '13px',
-        color: '#444',
-        flexShrink: 0,
-      }}>
+      <div
+        style={{
+          backgroundColor: "#fde8d0",
+          padding: "9px 20px",
+          textAlign: "center",
+          fontSize: "13px",
+          color: "#444",
+          flexShrink: 0,
+        }}
+      >
         {terms}
-        
-        <br/>{(pageIndex + 1 === totalPages) ? `Made with ❤️ by linkedin.com/in/thisisjaymodi` : ""}
-        
-      </div>
 
+        <br />
+        {pageIndex + 1 === totalPages
+          ? `Made with ❤️ by linkedin.com/in/thisisjaymodi`
+          : ""}
+      </div>
     </div>
   );
 }
@@ -443,17 +559,17 @@ const StoreFlyer = (props) => {
     valid_till     = '',
     tag_line       = '',
     terms          = '',
-    product        = [],
+    products        = [],
   } = props;
 
   const PRODUCTS_PER_PAGE = 9;
   const pages = [];
 
-  if (product.length === 0) {
+  if (products.length === 0) {
     pages.push([]);
   } else {
-    for (let i = 0; i < product.length; i += PRODUCTS_PER_PAGE) {
-      pages.push(product.slice(i, i + PRODUCTS_PER_PAGE));
+    for (let i = 0; i < products.length; i += PRODUCTS_PER_PAGE) {
+      pages.push(products.slice(i, i + PRODUCTS_PER_PAGE));
     }
   }
 
@@ -500,7 +616,7 @@ const data = {
   valid_till: "2026-02-22",
   tag_line: "Diwali Sale",
   terms: "This flyer is subject to terms and conditions",
-  product: [
+  products: [
     {
       id: 1,
       product_upc: 12510566,

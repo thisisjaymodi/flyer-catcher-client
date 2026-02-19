@@ -30,7 +30,7 @@ const data = {
   valid_till: "2026-02-22",
   tag_line: "Diwali Sale",
   terms: "This flyer is subject to availability. Prices may vary by location. While supplies last.",
-  product: [
+  products: [
     {
       id: 1,
       product_upc: 12510566,
