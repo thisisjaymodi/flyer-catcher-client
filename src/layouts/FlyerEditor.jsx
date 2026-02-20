@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { Box, Grid, Paper } from "@mui/material";
 import FormPanel from "../components/FlyerEditorTemplate/FormPanel";
 import DocumentPanel from "../components/FlyerEditorTemplate/DocumentPanel";
@@ -163,6 +163,29 @@ const printFlyer = () => {
   printWindow.document.close();
 };
 
+// ✅ Warn user before they close/refresh tab
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      // Check if form has any data
+      const hasData = 
+        form.store_name || 
+        form.store_location || 
+        form.tag_line || 
+        form.products.some(p => p.product_name || p.product_price);
+      
+      if (hasData) {
+        e.preventDefault();
+        e.returnValue = ''; // Chrome requires this
+        return ''; // Some browsers use return value
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [form]);
 
   return (
     <div>

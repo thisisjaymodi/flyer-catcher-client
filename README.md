@@ -1,16 +1,85 @@
-# React + Vite
+# Flyer Catcher Client
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A React + Vite app for creating promotional store flyers with live preview, image uploads, multi-product layouting, and PDF/print export.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Step-based editor (`branding`, `products`, `review`)
+- Live flyer preview while editing
+- Image upload for store branding and product images
+- Add/remove products dynamically
+- Automatic multi-page flyer rendering (9 products per page)
+- Download flyer as PDF (`html2canvas` + `jsPDF`)
+- Print flyer directly from the browser
+- Draft autosave in `localStorage`
 
-## React Compiler
+## Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- React 19
+- Vite 7
+- Material UI 7
+- html2canvas
+- jsPDF
 
-## Expanding the ESLint configuration
+## Getting Started
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### Prerequisites
+
+- Node.js `20.19+` or `22.12+`
+- npm
+
+### Install
+
+```bash
+npm install
+```
+
+### Run Development Server
+
+```bash
+npm run dev
+```
+
+Open the URL shown in terminal (usually `http://localhost:5173`).
+
+### Build for Production
+
+```bash
+npm run build
+```
+
+### Preview Production Build
+
+```bash
+npm run preview
+```
+
+### Lint
+
+```bash
+npm run lint
+```
+
+## Project Structure
+
+```text
+src/
+  App.jsx
+  layouts/
+    FlyerEditor.jsx
+  components/
+    FileUploadField.jsx
+    FlyerEditorTemplate/
+      FormPanel.jsx
+      DocumentPanel.jsx
+      StoreFlyer.jsx
+  assets/
+```
+
+## Notes
+
+- Uploaded `File` objects are not persisted in `localStorage`; only URL strings are persisted.
+- If you change draft schema, clear `localStorage` key `flyer-draft` to reset saved data.
+
+
+Made with ❤️ by Jay Modi
